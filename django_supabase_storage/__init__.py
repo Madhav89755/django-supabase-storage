@@ -4,7 +4,7 @@ Django Supabase Storage
 A Django storage backend for Supabase buckets.
 """
 
-__version__ = "0.1.1"
+__version__ = "1.0.0"
 __author__ = "Madhav Sharma"
 __license__ = "MIT"
 

@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="django-supabase-storage",
-    version="0.1.1",
+    version="1.0.0",
     author="Madhav Sharma",
     author_email="madhav.sharma2002.12@gmail.com",
     license="MIT",

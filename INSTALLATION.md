@@ -41,7 +41,7 @@ pip install django-supabase-storage
 Install specific version:
 
 ```bash
-pip install django-supabase-storage==0.1.1
+pip install django-supabase-storage==1.0.0
 
 ```
 
@@ -73,7 +73,7 @@ pip install git+https://github.com/Madhav89755/django-supabase-storage.git@main
 Install specific commit or tag:
 
 ```bash
-pip install git+https://github.com/Madhav89755/django-supabase-storage.git@v0.1.1
+pip install git+https://github.com/Madhav89755/django-supabase-storage.git@v1.0.0
 
 ```
 
@@ -114,7 +114,7 @@ pip install -e ".[dev]"
 Add to your `requirements.txt`:
 
 ```txt
-django-supabase-storage==0.1.1
+django-supabase-storage==1.0.0
 
 ```
 
@@ -147,7 +147,7 @@ Or add to `pyproject.toml`:
 
 ```toml
 [tool.poetry.dependencies]
-django-supabase-storage = "^0.1.1"
+django-supabase-storage = "^1.0.0"
 
 ```
 
@@ -706,5 +706,5 @@ Read [QUICK_START.md](QUICK_START.md) for setup instructions.
 ---
 
 *Last Updated: February 2026*  
-*Package Version: 0.1.1+*  
+*Package Version: 1.0.0+*  
 *Maintained: Yes*
