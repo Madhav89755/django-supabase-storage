@@ -29,6 +29,7 @@ import os
 # Supabase Configuration
 SUPABASE_URL = os.getenv('SUPABASE_URL', 'https://your-project-id.supabase.co')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY', 'your-anon-public-key')
+SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET_NAME", 'your-supabase-bucket-name')
 
 # Storage Configuration (Django 4.2+)
 STORAGES = {
@@ -52,6 +53,7 @@ Create a `.env` file:
 ```env
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_KEY=your-anon-public-key
+SUPABASE_BUCKET_NAME=your-supabase-bucket-name
 ```
 
 ## Using Storage Classes
@@ -283,6 +285,7 @@ accessed = storage.get_accessed_time('folder/filename.ext')
 ```python
 SUPABASE_URL = 'https://your-project-id.supabase.co'
 SUPABASE_KEY = 'your-anon-public-key'
+SUPABASE_BUCKET_NAME = 'your-supabase-bucket-name'
 ```
 
 ### Files Not Uploading
