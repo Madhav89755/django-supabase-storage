@@ -13,7 +13,7 @@ from django.conf import settings
 try:
     from supabase import create_client
 except ImportError:
-    raise ImportError("supabase is required. Install it with: pip install supabase")
+    create_client = None
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -60,9 +60,17 @@ class SupabaseStorage(Storage):
             raise ValueError(error_msg)
         
         # Create Supabase client
+        if create_client is None:
+            error_msg = (
+                "supabase is required but not installed!\n"
+                "Install it with: pip install supabase"
+            )
+            logger.error(error_msg)
+            raise ImportError(error_msg)
+        
         try:
             self.client = create_client(self.supabase_url, self.supabase_key)
-            logger.success("✓ Supabase client initialized successfully")
+            logger.info("✓ Supabase client initialized successfully")
         except Exception as e:
             error_msg = f"Failed to create Supabase client: {str(e)}"
             logger.error(error_msg)
@@ -324,7 +332,7 @@ class SupabaseMediaStorage(SupabaseStorage):
             'SUPABASE_MEDIA_BUCKET',
             getattr(settings, 'SUPABASE_BUCKET', self.bucket_name or 'media'),
         )
-        logger.success(f"✓ SupabaseMediaStorage initialized for Media bucket")
+        logger.info(f"✓ SupabaseMediaStorage initialized for Media bucket")
 
 
 class SupabaseStaticStorage(SupabaseStorage):
@@ -342,4 +350,4 @@ class SupabaseStaticStorage(SupabaseStorage):
             'SUPABASE_STATIC_BUCKET',
             getattr(settings, 'SUPABASE_BUCKET', self.bucket_name or 'static'),
         )
-        logger.success(f"✓ SupabaseStaticStorage initialized for Static bucket")
+        logger.info(f"✓ SupabaseStaticStorage initialized for Static bucket")

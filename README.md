@@ -1,2 +1,334 @@
 # django-supabase-storage
-Django package to connect to supabase storage
+
+A Django storage backend for Supabase buckets. Store your media and static files directly in Supabase Storage with a simple, drop-in replacement for Django's default storage backend.
+
+## Features
+
+- **Direct Supabase Storage Integration**: Upload files directly to Supabase buckets
+- **No Local Storage**: All files are stored in Supabase, not locally
+- **Media & Static Storage**: Separate storage backends for media and static files
+- **Django Compatible**: Works as a drop-in replacement for Django's default storage
+- **Easy Configuration**: Simple settings-based configuration
+- **Production Ready**: Comprehensive error handling and logging
+
+## Quick Start
+
+### 1. Installation
+
+```bash
+pip install django-supabase-storage
+```
+
+### 2. Configuration
+
+Add to your Django settings:
+
+```python
+import os
+
+# Supabase Configuration
+SUPABASE_URL = os.getenv('SUPABASE_URL', 'https://your-project-id.supabase.co')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY', 'your-anon-public-key')
+
+# Storage Configuration (Django 4.2+)
+STORAGES = {
+    'default': {
+        'BACKEND': 'django_supabase_storage.SupabaseMediaStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django_supabase_storage.SupabaseStaticStorage',
+    },
+}
+
+# For Django < 4.2, use:
+# DEFAULT_FILE_STORAGE = 'django_supabase_storage.SupabaseMediaStorage'
+# STATICFILES_STORAGE = 'django_supabase_storage.SupabaseStaticStorage'
+```
+
+### 3. Set Environment Variables
+
+Create a `.env` file:
+
+```env
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_KEY=your-anon-public-key
+```
+
+## Using Storage Classes
+
+### Media Files Storage
+
+For user uploads (images, documents, etc.):
+
+```python
+from django.core.files.storage import default_storage
+
+# Save a file to the media bucket
+file_path = default_storage.save('uploads/myfile.pdf', file_content)
+
+# Get the public URL
+file_url = default_storage.url(file_path)
+
+# Delete a file
+default_storage.delete('uploads/myfile.pdf')
+
+# Check if file exists
+if default_storage.exists('uploads/myfile.pdf'):
+    content = default_storage.open('uploads/myfile.pdf').read()
+```
+
+**In Django Models:**
+
+```python
+from django.db import models
+
+class UserProfile(models.Model):
+    avatar = models.ImageField(upload_to='avatars/')
+    resume = models.FileField(upload_to='resumes/')
+    bio = models.TextField()
+```
+
+**In Views:**
+
+```python
+from django.shortcuts import render
+from django.core.files.storage import default_storage
+
+def upload_avatar(request):
+    if request.method == 'POST':
+        file = request.FILES['avatar']
+        # Save automatically goes to Supabase
+        file_path = default_storage.save(f'avatars/{request.user.id}/{file.name}', file)
+        file_url = default_storage.url(file_path)
+        return render(request, 'success.html', {'url': file_url})
+    return render(request, 'upload.html')
+```
+
+### Static Files Storage
+
+For CSS, JavaScript, and static images:
+
+```python
+from django.templatetags.static import static
+
+# In your Django templates
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<script src="{% static 'js/main.js' %}"></script>
+```
+
+**Collecting Static Files:**
+
+```bash
+# Django automatically collects static files to Supabase
+python manage.py collectstatic
+```
+
+This uploads all your static files to the 'static' bucket in Supabase.
+
+## Storage Backends
+
+### SupabaseStorage (Base Class)
+
+The base storage class for custom implementations:
+
+```python
+from django_supabase_storage import SupabaseStorage
+
+class CustomStorage(SupabaseStorage):
+    folder_path = 'custom/'  # All files saved under this folder
+```
+
+### SupabaseMediaStorage
+
+Handles user-uploaded media files:
+
+- **Bucket**: 'media' (by default)
+- **Folder**: 'media'
+- **Use Case**: Profile pictures, documents, user uploads
+
+```python
+from django_supabase_storage import SupabaseMediaStorage
+
+# Direct usage
+storage = SupabaseMediaStorage()
+path = storage.save('documents/myfile.pdf', content)
+url = storage.url(path)
+```
+
+### SupabaseStaticStorage
+
+Handles static application files:
+
+- **Bucket**: 'static' (by default)
+- **Folder**: 'static'
+- **Use Case**: CSS, JavaScript, application images
+
+```python
+from django_supabase_storage import SupabaseStaticStorage
+
+# Used automatically with collectstatic
+# Or directly:
+storage = SupabaseStaticStorage()
+path = storage.save('js/app.js', content)
+url = storage.url(path)
+```
+
+## Complete Setup Example
+
+### Step 1: Create Supabase Buckets
+
+1. Go to [supabase.com](https://supabase.com) and create a project
+2. Navigate to **Storage** → **Buckets**
+3. Create bucket named `media`
+4. Create bucket named `static`
+5. For each bucket, go to **Policies** → **New Policy** → **Allow public read access**
+
+### Step 2: Get Credentials
+
+1. Go to **Settings** → **API**
+2. Copy **Project URL** (SUPABASE_URL)
+3. Copy **anon public key** (SUPABASE_KEY)
+
+### Step 3: Configure Django
+
+```python
+# settings.py
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Supabase Configuration
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+SUPABASE_MEDIA_BUCKET = os.getenv('SUPABASE_MEDIA_BUCKET', 'media')
+SUPABASE_STATIC_BUCKET = os.getenv('SUPABASE_STATIC_BUCKET', 'static')
+
+# Storage Configuration
+STORAGES = {
+    'default': {
+        'BACKEND': 'django_supabase_storage.SupabaseMediaStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django_supabase_storage.SupabaseStaticStorage',
+    },
+}
+
+# Static files URL for Supabase
+STATIC_URL = f'{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_STATIC_BUCKET}/'
+
+# Media files URL for Supabase
+MEDIA_URL = f'{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_MEDIA_BUCKET}/'
+```
+
+### Step 4: Use in Your Application
+
+```python
+# models.py
+from django.db import models
+
+class Article(models.Model):
+    title = models.CharField(max_length=200)
+    cover_image = models.ImageField(upload_to='articles/')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='avatars/')
+    bio = models.TextField()
+```
+
+## API Reference
+
+### SupabaseStorage Methods
+
+```python
+# Save a file
+path = storage.save('folder/filename.ext', content)
+
+# Open/download a file
+file_obj = storage.open('folder/filename.ext', mode='rb')
+content = file_obj.read()
+
+# Delete a file
+storage.delete('folder/filename.ext')
+
+# Check if file exists
+exists = storage.exists('folder/filename.ext')
+
+# List directory
+dirs, files = storage.listdir('folder/')
+
+# Get file size in bytes
+size = storage.size('folder/filename.ext')
+
+# Get public URL
+url = storage.url('folder/filename.ext')
+
+# Get file timestamps
+created = storage.get_created_time('folder/filename.ext')
+modified = storage.get_modified_time('folder/filename.ext')
+accessed = storage.get_accessed_time('folder/filename.ext')
+```
+
+## Troubleshooting
+
+### SUPABASE_URL or SUPABASE_KEY Not Configured
+
+**Error**: `ValueError: SUPABASE_URL is not configured!`
+
+**Solution**: Set environment variables or add to settings:
+
+```python
+SUPABASE_URL = 'https://your-project-id.supabase.co'
+SUPABASE_KEY = 'your-anon-public-key'
+```
+
+### Files Not Uploading
+
+**Error**: `IOError: UPLOAD TO SUPABASE FAILED!`
+
+**Solutions**:
+1. Verify API credentials are correct
+2. Check bucket exists in Supabase
+3. Ensure bucket policies allow uploads
+4. Check network connectivity
+
+### Files Not Found
+
+**Error**: `FileNotFoundError: Failed to download file_name`
+
+**Solutions**:
+1. Verify file path is correct
+2. Check bucket name configuration
+3. Ensure file was successfully uploaded
+
+### Permission Denied
+
+**Error**: `IOError: Permission denied`
+
+**Solutions**:
+1. Go to Supabase Dashboard → Storage → Buckets
+2. Click the bucket → Policies
+3. Ensure public read access is enabled
+
+## Best Practices
+
+1. **Use environment variables** for sensitive credentials
+2. **Set appropriate bucket policies** (public read for media/static)
+3. **Organize files with folders** (avatars/, uploads/, etc.)
+4. **Cache static files** in CDN for better performance
+5. **Monitor storage usage** in Supabase dashboard
+6. **Use Django's `get_absolute_url()`** for model file URLs
+
+## Support
+
+For issues and questions:
+- Open an issue on [GitHub](https://github.com/Madhav89755/django-supabase-storage)
+- See [INSTALLATION.md](INSTALLATION.md) for detailed setup instructions
+- Check [CHANGELOG.md](CHANGELOG.md) for version history
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
