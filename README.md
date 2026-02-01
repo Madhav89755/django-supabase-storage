@@ -188,8 +188,8 @@ url = storage.url(path)
 ### Step 2: Get Credentials
 
 1. Go to **Settings** → **API**
-2. Copy **Project URL** (SUPABASE_URL)
-3. Copy **anon public key** (SUPABASE_KEY)
+2. Copy __Project URL__ (SUPABASE_URL)
+3. Copy __anon public key__ (SUPABASE_KEY)
 
 ### Step 3: Configure Django
 
@@ -278,7 +278,7 @@ accessed = storage.get_accessed_time('folder/filename.ext')
 
 ### SUPABASE_URL or SUPABASE_KEY Not Configured
 
-**Error**: `ValueError: SUPABASE_URL is not configured!`
+__Error__: `ValueError: SUPABASE_URL is not configured!`
 
 **Solution**: Set environment variables or add to settings:
 
@@ -293,6 +293,7 @@ SUPABASE_BUCKET_NAME = 'your-supabase-bucket-name'
 **Error**: `IOError: UPLOAD TO SUPABASE FAILED!`
 
 **Solutions**:
+
 1. Verify API credentials are correct
 2. Check bucket exists in Supabase
 3. Ensure bucket policies allow uploads
@@ -300,9 +301,10 @@ SUPABASE_BUCKET_NAME = 'your-supabase-bucket-name'
 
 ### Files Not Found
 
-**Error**: `FileNotFoundError: Failed to download file_name`
+__Error__: `FileNotFoundError: Failed to download file_name`
 
 **Solutions**:
+
 1. Verify file path is correct
 2. Check bucket name configuration
 3. Ensure file was successfully uploaded
@@ -312,6 +314,7 @@ SUPABASE_BUCKET_NAME = 'your-supabase-bucket-name'
 **Error**: `IOError: Permission denied`
 
 **Solutions**:
+
 1. Go to Supabase Dashboard → Storage → Buckets
 2. Click the bucket → Policies
 3. Ensure public read access is enabled
@@ -323,11 +326,13 @@ SUPABASE_BUCKET_NAME = 'your-supabase-bucket-name'
 3. **Organize files with folders** (avatars/, uploads/, etc.)
 4. **Cache static files** in CDN for better performance
 5. **Monitor storage usage** in Supabase dashboard
-6. **Use Django's `get_absolute_url()`** for model file URLs
+6. __Use Django's `get_absolute_url()`__ for model file URLs
+7. Use separate buckets for both static and media files
 
 ## Support
 
 For issues and questions:
+
 - Open an issue on [GitHub](https://github.com/Madhav89755/django-supabase-storage)
 - See [INSTALLATION.md](INSTALLATION.md) for detailed setup instructions
 - Check [CHANGELOG.md](CHANGELOG.md) for version history
