@@ -6,6 +6,7 @@ No files are ever stored locally - everything goes to Supabase.
 """
 
 import logging
+import mimetypes
 from io import BytesIO
 from django.core.files.storage import Storage
 from django.conf import settings
@@ -130,10 +131,18 @@ class SupabaseStorage(Storage):
         try:
             logger.info(f"Uploading to Supabase: {self.bucket_name}/{self.folder_path}/{name}")
             
+            mime_type, _ = mimetypes.guess_type(name)
+            file_options = {"upsert": "true"}
+            if mime_type:
+                file_options["content-type"] = mime_type
+                logger.debug(f"Detected MIME type for {name}: {mime_type}")
+            else:
+                logger.debug(f"No MIME type detected for {name}; using default")
+
             response = self.client.storage.from_(self.bucket_name).upload(
                 path=f"{self.folder_path}/{name}",
                 file=file_content,
-                file_options={"upsert": "true"}
+                file_options=file_options
             )
 
             logger.info(f"✓ UPLOAD SUCCESSFUL")
