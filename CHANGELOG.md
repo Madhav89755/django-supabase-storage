@@ -20,6 +20,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-05-10
+
+### Added
+
+- Static manifest hashing is now enabled by default for `SupabaseStaticStorage`.
+- New opt-out setting: `SUPABASE_STATIC_MANIFEST = False`.
+- New explicit non-manifest backend export: `SupabaseStaticStorageNoManifest`.
+
+### Changed
+
+- Static storage path handling is now consistent across save, open, exists, delete, list, size, URL, and metadata operations.
+
+### Fixed
+
+- Fixed manifest lookup path so `staticfiles.json` resolves with the configured static folder prefix.
+- Allowed zero-byte files during `_save()` so `collectstatic` does not fail on empty static assets.
+
+---
+
 ## [1.0.0] - 2026-02-02
 
 ### 🎉 Initial Release
