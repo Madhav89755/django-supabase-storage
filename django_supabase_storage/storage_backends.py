@@ -126,11 +126,11 @@ class SupabaseStorage(Storage):
                 logger.debug("Content is bytes, using directly...")
                 file_content = content
             
-            file_size = len(file_content) if file_content else 0
+            file_size = len(file_content) if file_content is not None else 0
             logger.info(f"File size: {file_size} bytes")
-            
-            if not file_content:
-                error_msg = f"File is empty: {name}"
+
+            if file_content is None:
+                error_msg = f"File content is None: {name}"
                 logger.error(error_msg)
                 raise ValueError(error_msg)
                 
