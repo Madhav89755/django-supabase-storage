@@ -13,12 +13,14 @@ try:
         SupabaseStorage,
         SupabaseMediaStorage,
         SupabaseStaticStorage,
+        SupabaseStaticStorageNoManifest,
     )
 
     __all__ = [
         "SupabaseStorage",
         "SupabaseMediaStorage",
         "SupabaseStaticStorage",
+        "SupabaseStaticStorageNoManifest",
     ]
 except ImportError as e:
     # Allow the package to be imported even if dependencies are missing

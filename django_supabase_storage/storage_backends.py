@@ -8,6 +8,7 @@ No files are ever stored locally - everything goes to Supabase.
 import logging
 import mimetypes
 from io import BytesIO
+from django.contrib.staticfiles.storage import ManifestFilesMixin
 from django.core.files.storage import Storage
 from django.conf import settings
 
@@ -344,7 +345,7 @@ class SupabaseMediaStorage(SupabaseStorage):
         logger.info(f"✓ SupabaseMediaStorage initialized for Media bucket")
 
 
-class SupabaseStaticStorage(SupabaseStorage):
+class SupabaseStaticStorageBase(SupabaseStorage):
     """
     Static Files Storage (CSS, JavaScript, Images, etc.)
     
@@ -359,4 +360,22 @@ class SupabaseStaticStorage(SupabaseStorage):
             'SUPABASE_STATIC_BUCKET',
             getattr(settings, 'SUPABASE_BUCKET', self.bucket_name or 'static'),
         )
-        logger.info(f"✓ SupabaseStaticStorage initialized for Static bucket")
+        logger.info("✓ SupabaseStaticStorage initialized for Static bucket")
+
+
+class SupabaseStaticStorageNoManifest(SupabaseStaticStorageBase):
+    """Static storage without manifest hashing."""
+
+
+class SupabaseStaticStorage(ManifestFilesMixin, SupabaseStaticStorageBase):
+    """
+    Static storage with manifest hashing enabled by default.
+
+    Set SUPABASE_STATIC_MANIFEST = False to opt out and use plain static names.
+    """
+
+    def __new__(cls, *args, **kwargs):
+        use_manifest = getattr(settings, "SUPABASE_STATIC_MANIFEST", True)
+        if cls is SupabaseStaticStorage and not use_manifest:
+            return SupabaseStaticStorageNoManifest(*args, **kwargs)
+        return super().__new__(cls)
