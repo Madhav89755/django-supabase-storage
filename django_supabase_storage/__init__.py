@@ -4,7 +4,7 @@ Django Supabase Storage
 A Django storage backend for Supabase buckets.
 """
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 __author__ = "Madhav Sharma"
 __license__ = "MIT"
 
@@ -13,12 +13,14 @@ try:
         SupabaseStorage,
         SupabaseMediaStorage,
         SupabaseStaticStorage,
+        SupabaseStaticStorageNoManifest,
     )
 
     __all__ = [
         "SupabaseStorage",
         "SupabaseMediaStorage",
         "SupabaseStaticStorage",
+        "SupabaseStaticStorageNoManifest",
     ]
 except ImportError as e:
     # Allow the package to be imported even if dependencies are missing

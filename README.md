@@ -7,6 +7,7 @@ A Django storage backend for Supabase buckets. Store your media and static files
 - **Direct Supabase Storage Integration**: Upload files directly to Supabase buckets
 - **No Local Storage**: All files are stored in Supabase, not locally
 - **Media & Static Storage**: Separate storage backends for media and static files
+- **Manifest Hashing by Default**: Static files use Django manifest hashing for cache busting
 - **Django Compatible**: Works as a drop-in replacement for Django's default storage
 - **Easy Configuration**: Simple settings-based configuration
 - **Production Ready**: Comprehensive error handling and logging
@@ -40,6 +41,9 @@ STORAGES = {
         'BACKEND': 'django_supabase_storage.SupabaseStaticStorage',
     },
 }
+
+# Optional: disable static manifest hashing (enabled by default)
+# SUPABASE_STATIC_MANIFEST = False
 
 # For Django < 4.2, use:
 # DEFAULT_FILE_STORAGE = 'django_supabase_storage.SupabaseMediaStorage'
@@ -126,6 +130,7 @@ python manage.py collectstatic
 ```
 
 This uploads all your static files to the 'static' bucket in Supabase.
+By default, static filenames are manifest-hashed for cache busting.
 
 ## Storage Backends
 
@@ -163,6 +168,7 @@ Handles static application files:
 
 - **Bucket**: 'static' (by default)
 - **Folder**: 'static'
+- **Manifest hashing**: enabled by default
 - **Use Case**: CSS, JavaScript, application images
 
 ```python
@@ -173,6 +179,12 @@ from django_supabase_storage import SupabaseStaticStorage
 storage = SupabaseStaticStorage()
 path = storage.save('js/app.js', content)
 url = storage.url(path)
+```
+
+To opt out of manifest hashing:
+
+```python
+SUPABASE_STATIC_MANIFEST = False
 ```
 
 ## Complete Setup Example
@@ -215,6 +227,9 @@ STORAGES = {
         'BACKEND': 'django_supabase_storage.SupabaseStaticStorage',
     },
 }
+
+# Optional: disable static manifest hashing (enabled by default)
+# SUPABASE_STATIC_MANIFEST = False
 
 # Static files URL for Supabase
 STATIC_URL = f'{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_STATIC_BUCKET}/'
