@@ -124,6 +124,10 @@ STORAGES = {
     },
 }
 
+# Optional: disable manifest hashing for static files.
+# By default, static files use Django's ManifestFilesMixin for cache busting.
+# SUPABASE_STATIC_MANIFEST = False
+
 # For Django < 4.2, use these instead:
 # DEFAULT_FILE_STORAGE = 'django_supabase_storage.SupabaseMediaStorage'
 # STATICFILES_STORAGE = 'django_supabase_storage.SupabaseStaticStorage'
