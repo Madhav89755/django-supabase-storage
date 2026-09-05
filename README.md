@@ -2,7 +2,6 @@
 
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/django-supabase-storage?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/django-supabase-storage)
 
-
 A Django storage backend for Supabase buckets. Store your media and static files directly in Supabase Storage with a simple, drop-in replacement for Django's default storage backend.
 
 ## Features
@@ -61,6 +60,33 @@ Create a `.env` file:
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_KEY=your-anon-public-key
 SUPABASE_BUCKET_NAME=your-supabase-bucket-name
+```
+
+## Environment Variables
+
+All configuration is read from Django `settings` (typically populated from environment variables). The table below lists every setting supported by this package.
+
+| Setting                                              | Required | Default                         | Description                                                                                                                                     |
+| ---------------------------------------------------- | -------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SUPABASE_URL`                                       | Yes      | —                               | Your Supabase project URL, e.g. `https://your-project-id.supabase.co`.                                                                          |
+| `SUPABASE_KEY`                                       | Yes      | —                               | Your Supabase API key (anon/public key).                                                                                                        |
+| `SUPABASE_BUCKET`                                    | No       | `media`                         | Fallback bucket name used by both media and static storage when their dedicated bucket settings are not set.                                    |
+| `SUPABASE_MEDIA_BUCKET`                              | No       | `SUPABASE_BUCKET` (or `media`)  | Bucket used by `SupabaseMediaStorage` for user-uploaded files.                                                                                  |
+| `SUPABASE_STATIC_BUCKET`                             | No       | `SUPABASE_BUCKET` (or `static`) | Bucket used by `SupabaseStaticStorage` for static assets.                                                                                       |
+| `SUPABASE_STATIC_MANIFEST`                           | No       | `True`                          | Set to `False` to disable manifest hashing for `SupabaseStaticStorage` and use `SupabaseStaticStorageNoManifest` behavior instead.              |
+| `SUPABASE_STORAGE_TRUST_FILE_EXTENSION_CONTENT_TYPE` | No       | `False`                         | Set to `True` to guess the `Content-Type` header from the file extension on upload. When `False`, the safe default content type is always used. |
+| `SUPABASE_STORAGE_DEFAULT_UPLOAD_CONTENT_TYPE`       | No       | `application/octet-stream`      | Content type applied to uploads when extension-based detection is disabled or fails to detect a type.                                           |
+
+```python
+# settings.py
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+SUPABASE_BUCKET = os.getenv('SUPABASE_BUCKET', 'media')
+SUPABASE_MEDIA_BUCKET = os.getenv('SUPABASE_MEDIA_BUCKET', 'media')
+SUPABASE_STATIC_BUCKET = os.getenv('SUPABASE_STATIC_BUCKET', 'static')
+SUPABASE_STATIC_MANIFEST = True
+SUPABASE_STORAGE_TRUST_FILE_EXTENSION_CONTENT_TYPE = False
+SUPABASE_STORAGE_DEFAULT_UPLOAD_CONTENT_TYPE = 'application/octet-stream'
 ```
 
 ## Using Storage Classes
@@ -203,8 +229,8 @@ SUPABASE_STATIC_MANIFEST = False
 ### Step 2: Get Credentials
 
 1. Go to **Settings** → **API**
-2. Copy __Project URL__ (SUPABASE_URL)
-3. Copy __anon public key__ (SUPABASE_KEY)
+2. Copy **Project URL** (SUPABASE_URL)
+3. Copy **anon public key** (SUPABASE_KEY)
 
 ### Step 3: Configure Django
 
@@ -296,7 +322,7 @@ accessed = storage.get_accessed_time('folder/filename.ext')
 
 ### SUPABASE_URL or SUPABASE_KEY Not Configured
 
-__Error__: `ValueError: SUPABASE_URL is not configured!`
+**Error**: `ValueError: SUPABASE_URL is not configured!`
 
 **Solution**: Set environment variables or add to settings:
 
@@ -319,7 +345,7 @@ SUPABASE_BUCKET_NAME = 'your-supabase-bucket-name'
 
 ### Files Not Found
 
-__Error__: `FileNotFoundError: Failed to download file_name`
+**Error**: `FileNotFoundError: Failed to download file_name`
 
 **Solutions**:
 
@@ -344,7 +370,7 @@ __Error__: `FileNotFoundError: Failed to download file_name`
 3. **Organize files with folders** (avatars/, uploads/, etc.)
 4. **Cache static files** in CDN for better performance
 5. **Monitor storage usage** in Supabase dashboard
-6. __Use Django's `get_absolute_url()`__ for model file URLs
+6. **Use Django's `get_absolute_url()`** for model file URLs
 7. Use separate buckets for both static and media files
 
 ## Support

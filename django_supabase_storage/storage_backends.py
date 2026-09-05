@@ -125,6 +125,13 @@ class SupabaseStorage(Storage):
         try:
             if hasattr(content, "read"):
                 logger.debug("Content is file-like object, reading...")
+                # Rewind first: callers (e.g. ManifestFilesMixin hashing) may have
+                # already consumed the stream, which would otherwise yield an empty read.
+                if hasattr(content, "seek"):
+                    try:
+                        content.seek(0)
+                    except (OSError, ValueError, AttributeError):
+                        logger.debug("Could not seek content stream back to start")
                 file_content = content.read()
             else:
                 logger.debug("Content is bytes, using directly...")
