@@ -285,7 +285,7 @@ After installation, verify everything works:
 ### Step 1: Check Package Import
 
 ```bash
-python -c "import django_supabase_storage; print('✓ Package installed successfully')"
+python -c "import django_supabase_storage; print('====== Package installed successfully ======')"
 
 ```
 
@@ -299,7 +299,7 @@ python -c "import django_supabase_storage; print(f'Version: {django_supabase_sto
 ### Step 3: Check Classes Available
 
 ```bash
-python -c "from django_supabase_storage import SupabaseStorage, SupabaseMediaStorage, SupabaseStaticStorage; print('✓ All classes available')"
+python -c "from django_supabase_storage import SupabaseStorage, SupabaseMediaStorage, SupabaseStaticStorage; print('====== All classes available ======')"
 
 ```
 
@@ -405,21 +405,21 @@ from django.core.files.base import ContentFile
 # Test upload
 content = ContentFile(b"Test content")
 path = default_storage.save('test.txt', content)
-print(f"✓ File saved: {path}")
+print(f"====== File saved: {path} ======")
 
 # Test URL
 url = default_storage.url(path)
-print(f"✓ URL: {url}")
+print(f"====== URL: {url} ======")
 
 # Clean up
 default_storage.delete(path)
-print("✓ File deleted")
+print("====== File deleted ======")
 
 ```
 
 ### 6. Read Documentation
 
-- __[QUICK_START.md](QUICK_START.md)__ - 5-minute setup guide
+- **[QUICK_START.md](QUICK_START.md)** - 5-minute setup guide
 - **[README.md](README.md)** - Complete documentation
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment
 - **[FAQ.md](FAQ.md)** - Common questions
@@ -696,15 +696,15 @@ pip install django-supabase-storage
 **Verification**:
 
 ```bash
-python -c "import django_supabase_storage; print('✓ Success')"
+python -c "import django_supabase_storage; print('====== Success ======')"
 
 ```
 
-__Next Step__:
+**Next Step**:
 Read [QUICK_START.md](QUICK_START.md) for setup instructions.
 
 ---
 
-*Last Updated: February 2026*  
-*Package Version: 1.0.0+*  
-*Maintained: Yes*
+_Last Updated: February 2026_  
+_Package Version: 1.0.0+_  
+_Maintained: Yes_
