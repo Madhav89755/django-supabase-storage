@@ -20,6 +20,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.1] - 2026-09-05
+
+### Fixed
+
+- Windows-style backslash paths are now normalized to forward slashes before being sent to Supabase, preventing invalid storage keys.
+- `exists()`, `size()`, `get_created_time()`, and `get_modified_time()` now call the correct Supabase storage API (`info()`/`exists()`) instead of the nonexistent `get_metadata()` method.
+- `get_created_time()` and `get_modified_time()` now raise `NotImplementedError` when the timestamp is unavailable, matching Django's Storage API contract, instead of silently returning `None`.
+- `_open()` now returns a Django `File` wrapping the downloaded content (with the correct `name`) instead of a raw `BytesIO`.
+- "Not found" errors during `_open()` (e.g. the first `collectstatic` run reading a missing manifest) are now logged at `DEBUG` level instead of `ERROR`.
+
+---
+
 ## [1.1.0] - 2026-05-10
 
 ### Added
@@ -53,16 +65,16 @@ This is the first stable release of django-supabase-storage!
 - **SupabaseMediaStorage**: Pre-configured storage for media files
 - **SupabaseStaticStorage**: Pre-configured storage for static files
 - Complete Django Storage API implementation with all required methods:
-   - `save()` - Save files to Supabase buckets
-   - `open()` - Open and read files from buckets
-   - `delete()` - Delete files from buckets
-   - `exists()` - Check if file exists
-   - `listdir()` - List directory contents
-   - `size()` - Get file size
-   - `url()` - Generate public URLs
-   - `get_accessed_time()` - Get last access time
-   - `get_created_time()` - Get creation time
-   - `get_modified_time()` - Get modification time
+  - `save()` - Save files to Supabase buckets
+  - `open()` - Open and read files from buckets
+  - `delete()` - Delete files from buckets
+  - `exists()` - Check if file exists
+  - `listdir()` - List directory contents
+  - `size()` - Get file size
+  - `url()` - Generate public URLs
+  - `get_accessed_time()` - Get last access time
+  - `get_created_time()` - Get creation time
+  - `get_modified_time()` - Get modification time
 
 #### Configuration
 
@@ -117,7 +129,7 @@ This is the first stable release of django-supabase-storage!
 
 ### Developer Experience
 
-- Clear and comprehensive documentation 
+- Clear and comprehensive documentation
 - Multiple installation methods
 - Verification tools for quick debugging
 - Helpful error messages

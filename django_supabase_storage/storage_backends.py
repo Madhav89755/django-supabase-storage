@@ -9,8 +9,10 @@ import logging
 import mimetypes
 from io import BytesIO
 from django.contrib.staticfiles.storage import ManifestFilesMixin
+from django.core.files.base import File
 from django.core.files.storage import Storage
 from django.conf import settings
+from django.utils.dateparse import parse_datetime
 
 try:
     from supabase import create_client
@@ -36,10 +38,15 @@ class SupabaseStorage(Storage):
 
     folder_path = ""
 
+    @staticmethod
+    def _normalize_name(name):
+        """Normalize a path to use forward slashes (Supabase rejects backslashes as keys)."""
+        return str(name).replace("\\", "/").lstrip("/") if name else ""
+
     def _build_storage_path(self, name):
         """Build a bucket-relative path that consistently includes folder_path."""
-        cleaned_name = str(name).lstrip("/") if name else ""
-        cleaned_folder = str(self.folder_path).strip("/") if self.folder_path else ""
+        cleaned_name = self._normalize_name(name)
+        cleaned_folder = self._normalize_name(self.folder_path).strip("/")
         if cleaned_folder and cleaned_name:
             return f"{cleaned_folder}/{cleaned_name}"
         if cleaned_folder:
@@ -107,7 +114,7 @@ class SupabaseStorage(Storage):
 
         # Clean the path
         original_name = name
-        name = str(name).lstrip("/")
+        name = self._normalize_name(name)
         storage_path = self._build_storage_path(name)
 
         logger.info(f"====== FILE SAVE REQUEST TO SUPABASE ======")
@@ -197,17 +204,21 @@ class SupabaseStorage(Storage):
         Returns:
             BytesIO object with file content
         """
-        name = str(name).lstrip("/")
+        name = self._normalize_name(name)
         storage_path = self._build_storage_path(name)
         logger.info(f"Opening file from Supabase: {self.bucket_name}/{storage_path}")
 
         try:
             data = self.client.storage.from_(self.bucket_name).download(storage_path)
             logger.info(f"====== File opened: {name} ======")
-            return BytesIO(data)
+            return File(BytesIO(data), name=name)
         except Exception as e:
             error_msg = f"Failed to download {name}: {str(e)}"
-            logger.error(error_msg)
+            # Not found is an expected condition (e.g. manifest read on first collectstatic run)
+            if "not_found" in str(e) or "404" in str(e):
+                logger.debug(error_msg)
+            else:
+                logger.error(error_msg)
             raise FileNotFoundError(error_msg)
 
     def delete(self, name):
@@ -220,7 +231,7 @@ class SupabaseStorage(Storage):
         if not name:
             return
 
-        name = str(name).lstrip("/")
+        name = self._normalize_name(name)
         storage_path = self._build_storage_path(name)
         logger.info(f"Deleting from Supabase: {self.bucket_name}/{storage_path}")
 
@@ -243,12 +254,11 @@ class SupabaseStorage(Storage):
         if not name:
             return False
 
-        name = str(name).lstrip("/")
+        name = self._normalize_name(name)
         storage_path = self._build_storage_path(name)
 
         try:
-            self.client.storage.from_(self.bucket_name).get_metadata(storage_path)
-            return True
+            return self.client.storage.from_(self.bucket_name).exists(storage_path)
         except Exception:
             return False
 
@@ -262,7 +272,7 @@ class SupabaseStorage(Storage):
         Returns:
             (directories, files) tuple
         """
-        path = str(path).lstrip("/") if path else ""
+        path = self._normalize_name(path)
         storage_path = self._build_storage_path(path)
 
         try:
@@ -294,11 +304,11 @@ class SupabaseStorage(Storage):
         if not name:
             return 0
 
-        name = str(name).lstrip("/")
+        name = self._normalize_name(name)
         storage_path = self._build_storage_path(name)
 
         try:
-            metadata = self.client.storage.from_(self.bucket_name).get_metadata(storage_path)
+            metadata = self.client.storage.from_(self.bucket_name).info(storage_path)
             size = metadata.get("metadata", {}).get("size", 0)
             return size
         except Exception:
@@ -317,7 +327,7 @@ class SupabaseStorage(Storage):
         if not name:
             return ""
 
-        name = str(name).lstrip("/")
+        name = self._normalize_name(name)
 
         # Construct the public URL
         storage_path = self._build_storage_path(name)
@@ -329,32 +339,40 @@ class SupabaseStorage(Storage):
         return self.get_created_time(name)
 
     def get_created_time(self, name):
-        """Get file creation time."""
-        if not name:
-            return None
+        """Get file creation time.
 
-        name = str(name).lstrip("/")
+        Per the Storage API contract, raises NotImplementedError if unavailable
+        (Django's collectstatic relies on this rather than a None return).
+        """
+        name = self._normalize_name(name)
         storage_path = self._build_storage_path(name)
 
         try:
-            metadata = self.client.storage.from_(self.bucket_name).get_metadata(storage_path)
-            return metadata.get("created_at")
-        except Exception:
-            return None
+            metadata = self.client.storage.from_(self.bucket_name).info(storage_path)
+            created_at = parse_datetime(metadata.get("created_at", ""))
+            if created_at is None:
+                raise ValueError("created_at missing or unparsable")
+            return created_at
+        except Exception as e:
+            raise NotImplementedError(f"Could not determine created time for {name}: {e}")
 
     def get_modified_time(self, name):
-        """Get file modification time."""
-        if not name:
-            return None
+        """Get file modification time.
 
-        name = str(name).lstrip("/")
+        Per the Storage API contract, raises NotImplementedError if unavailable
+        (Django's collectstatic relies on this rather than a None return).
+        """
+        name = self._normalize_name(name)
         storage_path = self._build_storage_path(name)
 
         try:
-            metadata = self.client.storage.from_(self.bucket_name).get_metadata(storage_path)
-            return metadata.get("updated_at")
-        except Exception:
-            return None
+            metadata = self.client.storage.from_(self.bucket_name).info(storage_path)
+            updated_at = parse_datetime(metadata.get("updated_at", ""))
+            if updated_at is None:
+                raise ValueError("updated_at missing or unparsable")
+            return updated_at
+        except Exception as e:
+            raise NotImplementedError(f"Could not determine modified time for {name}: {e}")
 
 
 class SupabaseMediaStorage(SupabaseStorage):
