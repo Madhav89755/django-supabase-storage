@@ -1,5 +1,8 @@
 # django-supabase-storage
 
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/django-supabase-storage?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/django-supabase-storage)
+
+
 A Django storage backend for Supabase buckets. Store your media and static files directly in Supabase Storage with a simple, drop-in replacement for Django's default storage backend.
 
 ## Features
