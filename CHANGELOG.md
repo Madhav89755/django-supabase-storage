@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.2] - 2026-09-05
+
+### Fixed
+
+- File streams that were already read/consumed before `_save()` (e.g. by `ManifestFilesMixin` hashing during `collectstatic`) are now rewound with `seek(0)` first, fixing static files silently uploading as empty content.
+- Confirmed and closed [#2](https://github.com/Madhav89755/django-supabase-storage/issues/2): `delete()` correctly includes `folder_path` when removing files, since all path-based operations (`_save()`, `url()`, `delete()`, `exists()`, `size()`, `listdir()`, timestamps) share the same `_build_storage_path()` helper.
+
+---
+
 ## [1.1.1] - 2026-09-05
 
 ### Fixed
