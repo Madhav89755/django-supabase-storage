@@ -142,14 +142,36 @@ class SupabaseStorage(Storage):
         # Upload to Supabase ONLY
         try:
             logger.info(f"Uploading to Supabase: {self.bucket_name}/{storage_path}")
-            
-            mime_type, _ = mimetypes.guess_type(name)
+
             file_options = {"upsert": "true"}
-            if mime_type:
-                file_options["content-type"] = mime_type
-                logger.debug(f"Detected MIME type for {name}: {mime_type}")
+            trust_file_extension_content_type = getattr(
+                settings,
+                "SUPABASE_STORAGE_TRUST_FILE_EXTENSION_CONTENT_TYPE",
+                False,
+            )
+            default_upload_content_type = getattr(
+                settings,
+                "SUPABASE_STORAGE_DEFAULT_UPLOAD_CONTENT_TYPE",
+                "application/octet-stream",
+            )
+
+            if trust_file_extension_content_type:
+                mime_type, _ = mimetypes.guess_type(name)
+                if mime_type:
+                    file_options["content-type"] = mime_type
+                    logger.debug(f"Detected MIME type for {name}: {mime_type}")
+                else:
+                    file_options["content-type"] = default_upload_content_type
+                    logger.debug(
+                        f"No MIME type detected for {name}; using safe default "
+                        f"{default_upload_content_type}"
+                    )
             else:
-                logger.debug(f"No MIME type detected for {name}; using default")
+                file_options["content-type"] = default_upload_content_type
+                logger.debug(
+                    f"Using safe default content type for {name}: "
+                    f"{default_upload_content_type}"
+                )
 
             response = self.client.storage.from_(self.bucket_name).upload(
                 path=storage_path,
